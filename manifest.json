@@ -1,9 +1,9 @@
 {
-	"id": "obsidian-sample-plugin",
+	"id": "obsidian-auto-template-prompt",
 	"name": "Sample Plugin",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a sample plugin for Obsidian. This plugin demonstrates some of the capabilities of the Obsidian API.",
+	"description": "This is a simple plugin, that triggers the template prompt when creating a note.",
 	"author": "Obsidian",
 	"authorUrl": "https://obsidian.md",
 	"fundingUrl": "https://obsidian.md/pricing",

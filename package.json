@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "obsidian-auto-template-prompt",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "This is a simple plugin, that triggers the template prompt when creating a note",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
