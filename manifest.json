@@ -1,9 +1,9 @@
 {
-	"id": "obsidian-auto-template-prompt",
+	"id": "auto-template-prompt",
 	"name": "Auto Template Prompt",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
-	"description": "This is a plugin, that triggers the template prompt when creating a note. It requires the `Templates` core plugin to be enabled",
+	"description": "Trigger the template prompt when creating a note",
 	"author": "Numeroflip",
 	"isDesktopOnly": false
 }
