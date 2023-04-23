@@ -9,6 +9,10 @@
 		"version": "node version-bump.mjs && git add manifest.json versions.json"
 	},
 	"keywords": [],
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/numeroflip/obsidian-auto-template-prompt.git"
+	  },
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
