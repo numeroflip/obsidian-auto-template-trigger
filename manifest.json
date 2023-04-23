@@ -1,7 +1,7 @@
 {
 	"id": "auto-template-prompt",
 	"name": "Auto Template Prompt",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"minAppVersion": "0.15.0",
 	"description": "Trigger the template prompt when creating a note",
 	"author": "Numeroflip",

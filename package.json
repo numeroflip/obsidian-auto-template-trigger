@@ -1,6 +1,6 @@
 {
 	"name": "auto-template-prompt",
-	"version": "1.0.0",
+	"version": "1.0.1",
 	"description": "Trigger the template prompt when creating a note",
 	"main": "main.js",
 	"scripts": {
