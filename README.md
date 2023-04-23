@@ -1,7 +1,7 @@
 # Auto Template Prompt
 
 This is a simple Obsidian plugin. (https://obsidian.md)  
-It triggers the template prompt when creating a note. (And the Template plugin is be enabled)
+It triggers the template prompt when creating a note. (And the Template plugin is enabled)
 
 If the built-in template plugin serves your needs weel, this one might enhance your experience. 
 
