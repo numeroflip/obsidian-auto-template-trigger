@@ -5,7 +5,7 @@ It triggers the template prompt when creating a note. (If you have multiple temp
 If you have a single template, it get's applied every time a note is created.
 
 ## Prerequisites
-It depends on the core `Templates` plugin to be enabled, and a templates folder is being assigned.
+It depends on the core `Templates` plugin to be enabled, and that a templates folder is being assigned.
 
 ## Usage
 Make sure you have one or more template.  
