@@ -1,7 +1,7 @@
 {
-	"name": "auto-template-prompt",
-	"version": "1.0.1",
-	"description": "Trigger the template prompt when creating a note",
+	"name": "auto-template-trigger",
+	"version": "1.0.2",
+	"description": "Automatically trigger the 'Insert Template' command when creating a note. It Automatically applies the template, if you only have one. In case you have multiple templates, a selector prompt is triggered.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
