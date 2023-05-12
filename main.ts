@@ -26,25 +26,8 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 					return; // Do not trigger when creating a template
 				}
 
-				const templateFiles = this.getFilesInFolder(templatesFolder)
-				const templateFileCount = templateFiles?.length
+				this.insertTemplate();
 
-				if (!templateFileCount) {
-					return
-				}
-
-				/**
-				 * For some reason, if there is a single template, 
-				 * immediately calling the 'insert-template' command does not work. 
-				 * BUT, if it's called a bit later, it does. Hence the minor timeout.
-				 */
-				if (templateFileCount === 1) {
-					setTimeout(this.insertTemplate, DELAY_IN_MILLISECONDS)
-				}
-
-				if (templateFileCount > 1) {
-					this.insertTemplate();
-				}
 			}))
 	}
 
@@ -52,12 +35,6 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		//@ts-expect-error
 		const templatesSettings = await this.app.vault.readConfigJson('templates')
 		return templatesSettings?.folder
-
-	}
-
-	getFilesInFolder(folderPath: string) {
-		const files = this.app.vault.getAllLoadedFiles().filter(file => file.path.startsWith(`${folderPath}/`))
-		return files
 	}
 
 	isMarkdown(file: TAbstractFile) {
