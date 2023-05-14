@@ -4,7 +4,7 @@ This is a simple Obsidian plugin. (https://obsidian.md)
 It triggers the template prompt when creating a note.
 
 ## Prerequisites
-It depends on the core `Templates` plugin to be enabled, and that a templates folder is being assigned.
+It depends on the core `Templates` plugin to be enabled, and that a templates folder is assigned.
 
 ## Usage
 Make sure you have one or more template.  
