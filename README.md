@@ -9,7 +9,7 @@ It depends on the core `Templates` plugin to be enabled, and that a templates fo
 ## Usage
 Make sure you have one or more template.  
 
-If the built-in template plugin serves your needs weel, this one might enhance your experience. 
+If the built-in template plugin serves your needs well, this one might enhance your experience. 
 
 ## Behavior
 ### 1. Create a new note
