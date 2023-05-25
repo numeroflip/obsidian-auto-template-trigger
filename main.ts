@@ -1,7 +1,5 @@
 import { Plugin, TAbstractFile, TFile } from 'obsidian';
 
-const DELAY_IN_MILLISECONDS = 100;
-
 export default class AutoTemplatePromptPlugin extends Plugin {
 	isReady = false;
 
@@ -11,18 +9,30 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		})
 
 		this.registerEvent(
-			this.app.vault.on("create", async (newFile) => {
-				if (!this.isReady || !this.isMarkdown(newFile)) {
+			this.app.vault.on("create", async (createdFile) => {
+				
+				if (!this.isReady || !this.isMarkdown(createdFile)) {
 					return;
+				}
+
+				if (!(createdFile instanceof TFile)) {
+					return;
+				}
+
+				const isJustCreated = createdFile.stat.ctime === createdFile.stat.mtime
+
+				if (!isJustCreated) {
+					return
 				}
 
 				const templatesFolder = await this.getTemplatesFolder()
 
+			
 				if (!templatesFolder) {
 					return
 				}
 
-				if (newFile.path.startsWith(templatesFolder)) {
+				if (createdFile.path.startsWith(templatesFolder)) {
 					return; // Do not trigger when creating a template
 				}
 
