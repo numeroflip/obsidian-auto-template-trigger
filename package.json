@@ -1,6 +1,6 @@
 {
 	"name": "auto-template-trigger",
-	"version": "1.0.4",
+	"version": "1.0.5",
 	"description": "Automatically prompt for a template, when creating a note.",
 	"main": "main.js",
 	"scripts": {
