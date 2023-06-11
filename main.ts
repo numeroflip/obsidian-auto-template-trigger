@@ -9,36 +9,47 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		})
 
 		this.registerEvent(
-			this.app.vault.on("create", async (createdFile) => {
-				
-				if (!this.isReady || !this.isMarkdown(createdFile)) {
-					return;
-				}
+			this.app.workspace.on("file-open", async (file) => {
 
-				if (!(createdFile instanceof TFile)) {
-					return;
-				}
-
-				const isJustCreated = createdFile.stat.ctime === createdFile.stat.mtime
-
-				if (!isJustCreated) {
+				if (!file) {
 					return
 				}
 
-				const templatesFolder = await this.getTemplatesFolder()
+				const shouldTriggerPrompt = await this.shouldTriggerTemplatePrompt(file)
 
-			
-				if (!templatesFolder) {
-					return
+				if (shouldTriggerPrompt) {
+					this.insertTemplate();
 				}
-
-				if (createdFile.path.startsWith(templatesFolder)) {
-					return; // Do not trigger when creating a template
-				}
-
-				this.insertTemplate();
-
 			}))
+	}
+
+	async shouldTriggerTemplatePrompt(file: TFile): Promise<Boolean> {
+		if (!this.isReady || !this.isMarkdown(file)) {
+			return false;
+		}
+
+		const isNewFile = file.stat.ctime === file.stat.mtime;
+
+		if (!isNewFile) {
+			return false;
+		}
+
+		const isFileFocused = this.app.workspace.getActiveFile()?.path === file.path
+
+		if (!isFileFocused) {
+			return false
+		}
+
+		const templatesFolder = await this.getTemplatesFolder();
+		if (!templatesFolder) {
+			return false;
+		}
+
+		if (file.path.startsWith(templatesFolder)) {
+			return false;
+		}
+
+		return true
 	}
 
 	async getTemplatesFolder() {
