@@ -20,9 +20,8 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 				}
 
 				const isJustCreated = createdFile.stat.ctime === createdFile.stat.mtime
-				const isFileInFocus = this.app.workspace.getActiveFile()?.path === createdFile.path;
 
-				if (!isJustCreated || !isFileInFocus) {
+				if (!isJustCreated) {
 					return
 				}
 
