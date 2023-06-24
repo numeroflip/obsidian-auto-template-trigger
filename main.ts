@@ -28,9 +28,11 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 			return false;
 		}
 
-		const isNewFile = file.stat.ctime === file.stat.mtime;
+		const isFileNew = file.stat.ctime === file.stat.mtime;
+		const isFileEmpty = file.stat.size === 0;
+		
 
-		if (!isNewFile) {
+		if (!isFileNew || isFileEmpty) {
 			return false;
 		}
 
@@ -45,7 +47,8 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 			return false;
 		}
 
-		if (file.path.startsWith(templatesFolder)) {
+		const isFileInTemplatesFolder = file.path.startsWith(templatesFolder)
+		if (isFileInTemplatesFolder) {
 			return false;
 		}
 
