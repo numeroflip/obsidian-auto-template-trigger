@@ -32,7 +32,7 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		const isFileEmpty = file.stat.size === 0;
 		
 
-		if (!isFileNew || isFileEmpty) {
+		if (!isFileNew || !isFileEmpty) {
 			return false;
 		}
 
