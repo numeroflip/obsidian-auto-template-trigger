@@ -18,7 +18,7 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 				const shouldTriggerPrompt = await this.shouldTriggerTemplatePrompt(file)
 
 				if (shouldTriggerPrompt) {
-					this.insertTemplate();
+					this.triggerTemplatePrompt();
 				}
 			}))
 	}
@@ -52,7 +52,39 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 			return false;
 		}
 
+		if (this.shouldPreventTriggerIfTemplaterPluginUsed(file)) {
+			return false
+		}
+
 		return true
+	}
+
+	shouldPreventTriggerIfTemplaterPluginUsed(file: TFile){
+		//@ts-expect-error: app.plugins.plugins is not typed globally
+		const templaterPlugin = this.app.plugins?.plugins?.["templater-obsidian"] as TemplaterPlugin
+		if (!templaterPlugin) {
+			return false
+		}
+
+		const areTemplaterFoldersEnabled = !!templaterPlugin?.settings?.enable_folder_templates 
+
+		if (!areTemplaterFoldersEnabled) {
+			return false
+		}
+
+		const templaterFolders = templaterPlugin?.settings?.folder_templates.map(({folder}) => folder)
+
+		if (!Array.isArray(templaterFolders)) {
+			return false
+		}
+
+		const isFileInTemplaterFolder = templaterFolders.some((templaterFolder) => file.path.startsWith(templaterFolder + '/'))
+
+		if (isFileInTemplaterFolder) {
+			return true
+		}
+
+		return false
 	}
 
 	async getTemplatesFolder() {
@@ -65,8 +97,21 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		return file.path.endsWith('.md')
 	}
 
-	insertTemplate() {
+	triggerTemplatePrompt() {
 		//@ts-expect-error
 		this.app.commands.executeCommandById('insert-template');
+	}
+}
+
+
+interface TemplaterFolder {
+	folder: string,
+	template: string
+}
+
+interface TemplaterPlugin {
+	settings?: {
+		enable_folder_templates: boolean,
+		folder_templates: TemplaterFolder[]
 	}
 }
