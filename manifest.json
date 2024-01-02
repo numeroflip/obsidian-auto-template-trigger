@@ -1,7 +1,7 @@
 {
 	"id": "auto-template-trigger",
 	"name": "Auto Template Trigger",
-	"version": "1.1.2",
+	"version": "1.1.3",
 	"minAppVersion": "1.2.0",
 	"description": "Automatically prompt for a template, when creating a note.",
 	"author": "Numeroflip",
