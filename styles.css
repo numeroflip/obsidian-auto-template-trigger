@@ -6,3 +6,12 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+:root {
+    --auto-template-prompt-modal-opacity: 100;
+}
+
+.modal-container {
+    opacity: var(--auto-template-prompt-modal-opacity);
+    transition: opacity 0.2s ease-in-out;
+}
