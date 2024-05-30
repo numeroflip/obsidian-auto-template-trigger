@@ -1,14 +1,32 @@
 import { Plugin, TAbstractFile, TFile } from "obsidian";
 import { shouldPreventTriggerIfTemplaterPluginUsed } from "./utils/templaterPluginUtils";
+import {
+	DEFAULT_SETTINGS,
+	PluginSettings,
+	Settings,
+} from "./settings/Settings";
+import {
+	getTemplateFiles,
+	getTemplatesFolder,
+	isMarkdown,
+	setPromptOpacity,
+} from "utils/utils";
+
 const TEMPLATE_SUGGESTION_CLASS = "suggestion-item";
+const INSERT_TEMPLATE_COMMAND = "insert-template";
 
 export default class AutoTemplatePromptPlugin extends Plugin {
 	isReady = false;
-
+	settings: PluginSettings;
 	async onload() {
+		setPromptOpacity(1);
+
 		this.app.workspace.onLayoutReady(() => {
 			this.isReady = true;
 		});
+		await this.loadSettings();
+
+		this.addSettingTab(new Settings(this.app, this));
 
 		this.registerEvent(
 			this.app.workspace.on("file-open", async (file) => {
@@ -26,32 +44,37 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		);
 	}
 
+	async loadSettings() {
+		this.settings = Object.assign(
+			{},
+			DEFAULT_SETTINGS,
+			await this.loadData()
+		);
+	}
+
+	async saveSettings() {
+		await this.saveData(this.settings);
+	}
+
 	async shouldTriggerTemplatePrompt(file: TFile): Promise<Boolean> {
-		if (!this.isReady || !this.isMarkdown(file)) {
+		let isFileNew: boolean, isFileEmpty: boolean, isFileFocused: boolean;
+
+		if (!this.isReady || !isMarkdown(file)) {
 			return false;
 		}
 
-		const isFileNew = file.stat.ctime === file.stat.mtime;
-		const isFileEmpty = file.stat.size === 0;
+		isFileNew = file.stat.ctime === file.stat.mtime;
+		isFileEmpty = file.stat.size === 0;
+		isFileFocused = this.app.workspace.getActiveFile()?.path === file.path;
 
-		if (!isFileNew || !isFileEmpty) {
+		if (!isFileNew || !isFileEmpty || !isFileFocused) {
 			return false;
 		}
 
-		const isFileFocused =
-			this.app.workspace.getActiveFile()?.path === file.path;
-
-		if (!isFileFocused) {
-			return false;
-		}
-
-		const templatesFolder = await this.getTemplatesFolder();
-		if (!templatesFolder) {
-			return false;
-		}
-
+		const templatesFolder = await getTemplatesFolder(app);
 		const isFileInTemplatesFolder = file.path.startsWith(templatesFolder);
-		if (isFileInTemplatesFolder) {
+
+		if (!templatesFolder || !isFileInTemplatesFolder) {
 			return false;
 		}
 
@@ -62,43 +85,104 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		return true;
 	}
 
-	async getTemplatesFolder() {
-		//@ts-expect-error
-		const templatesSettings = await this.app.vault.readConfigJson(
-			"templates"
-		);
-		return templatesSettings?.folder;
-	}
+	async handleTemplateTrigger() {
+		const templateFiles = await getTemplateFiles(app);
 
-	isMarkdown(file: TAbstractFile) {
-		return file.path.endsWith(".md");
-	}
-
-	triggerTemplatePrompt() {
-		//@ts-expect-error
-		this.app.commands.executeCommandById("insert-template");
-	}
-
-	handleTemplateTrigger() {
-		this.setModalOpacity(0);
-
-		this.triggerTemplatePrompt();
-		const suggestions = document.getElementsByClassName(
-			TEMPLATE_SUGGESTION_CLASS
-		);
-
-		if (suggestions.length === 1) {
-			const suggestion = suggestions[0] as HTMLElement;
-			suggestion.click();
+		if (templateFiles.length === 0) {
+			console.error("No template files found");
 		}
 
-		this.setModalOpacity(1);
+		if (templateFiles.length === 1) {
+			this.applySpecificTemplate(templateFiles[0].basename);
+		}
+
+		if (templateFiles.length > 1) {
+			const mightHaveAssignedTemplate =
+				this.settings.folderSpecificTemplates.length >= 0;
+
+			const assignedTemplate = mightHaveAssignedTemplate
+				? this.findAssignedTemplate()
+				: null;
+
+			if (assignedTemplate) {
+				this.applySpecificTemplate(assignedTemplate);
+			}
+
+			if (!assignedTemplate) {
+				this.triggerTemplateSelectorPrompt();
+			}
+		}
 	}
 
-	setModalOpacity(number: 0 | 1) {
-		document.documentElement.style.setProperty(
-			"--auto-template-prompt-modal-opacity",
-			number.toString()
+	findAssignedTemplate() {
+		const currentFolder = this.app.workspace.getActiveFile()?.parent;
+
+		if (!currentFolder) {
+			console.error("findAssignedTemplate: No active folder");
+			return;
+		}
+
+		const rootFolder = "/";
+		const pathFragments = currentFolder.path.split("/");
+
+		// get the possible paths, for which we can have assigned templates in the settings
+		// eg.: "/", "/folder1", "/folder1/folder2"
+		const possiblePaths = pathFragments.reduce(
+			(prevPaths, pathFragment) => {
+				if (!prevPaths.length) {
+					return [pathFragment];
+				} else {
+					const newPath = [prevPaths, pathFragment].join("/");
+					return [...prevPaths, newPath];
+				}
+			},
+			[]
 		);
+		possiblePaths.push(rootFolder);
+		possiblePaths.sort((a, b) => b.length - a.length); // longest paths first, so the first match is the most specific one
+
+		let assignedTemplateSetting:
+			| PluginSettings["folderSpecificTemplates"][0]
+			| undefined;
+
+		possiblePaths.forEach((path) => {
+			if (assignedTemplateSetting) {
+				return;
+			}
+
+			assignedTemplateSetting =
+				this.settings.folderSpecificTemplates.find(
+					({ folderPath }) => folderPath === path
+				);
+		});
+
+		return assignedTemplateSetting?.templateName;
+	}
+
+	applySpecificTemplate(templateName: string) {
+		setPromptOpacity(0);
+		this.triggerTemplateSelectorPrompt();
+
+		const suggestions = Array.from(
+			document.getElementsByClassName(TEMPLATE_SUGGESTION_CLASS)
+		);
+
+		const template = suggestions.find(
+			(suggestion) => suggestion.textContent === templateName
+		);
+
+		if (template instanceof HTMLElement) {
+			template.scrollIntoView();
+			template.click();
+		} else {
+			console.error("Template not found: ", templateName);
+		}
+
+		setPromptOpacity(1);
+	}
+
+	triggerTemplateSelectorPrompt() {
+		//@ts-expect-error
+		this.app.commands.executeCommandById(INSERT_TEMPLATE_COMMAND);
 	}
 }

@@ -1,7 +1,7 @@
 {
 	"name": "auto-template-trigger",
-	"version": "1.1.3",
-	"description": "Automatically prompt for a template, when creating a note.",
+	"version": "1.2.0",
+	"description": "Automatically apply or prompt for a template when creating a note. Supports assigning templates to folders.",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",
@@ -12,7 +12,7 @@
 	"repository": {
 		"type": "git",
 		"url": "https://github.com/numeroflip/obsidian-auto-template-prompt.git"
-	  },
+	},
 	"author": "",
 	"license": "MIT",
 	"devDependencies": {
@@ -24,5 +24,8 @@
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4"
+	},
+	"dependencies": {
+		"@popperjs/core": "^2.11.8"
 	}
 }

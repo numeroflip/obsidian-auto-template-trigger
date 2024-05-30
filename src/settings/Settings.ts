@@ -1,0 +1,110 @@
+import { TemplateSuggest, FolderSuggest } from "./fileSuggest";
+import AutoTemplatePromptPlugin from "../main";
+import { App, PluginSettingTab, Setting, TAbstractFile, TFile } from "obsidian";
+import { getTemplatesFolder } from "utils/utils";
+
+export interface PluginSettings {
+	folderSpecificTemplates: { folderPath: string; templateName: string }[];
+}
+
+export const DEFAULT_SETTINGS: PluginSettings = {
+	folderSpecificTemplates: [],
+};
+
+export class Settings extends PluginSettingTab {
+	plugin: AutoTemplatePromptPlugin;
+
+	constructor(app: App, plugin: AutoTemplatePromptPlugin) {
+		super(app, plugin);
+		this.plugin = plugin;
+	}
+
+	display(): void {
+		let { containerEl } = this;
+
+		containerEl.empty();
+
+		new Setting(containerEl)
+			.setName("Folder specific templates")
+			.setHeading()
+			.setDesc(
+				"Select a template, which will be automatically applied on new notes in the selected folder. The most specific folder path will be used."
+			);
+
+		this.plugin.settings.folderSpecificTemplates.map(
+			({ folderPath, templateName }, index) => {
+				new Setting(this.containerEl)
+					.addSearch((cb) => {
+						new FolderSuggest(this.app, cb.inputEl);
+						cb.setValue(folderPath);
+						cb.setPlaceholder("Select a folder");
+						cb.onChange(() => {
+							this.plugin.settings.folderSpecificTemplates[
+								index
+							].folderPath = cb.getValue();
+
+							this.plugin.saveSettings();
+						});
+					})
+					.addDropdown(async (cb) => {
+						const templatesFolder = await getTemplatesFolder(
+							this.app
+						);
+						if (!templatesFolder) {
+							return [];
+						}
+						const templateFiles = this.app.vault
+							.getAllLoadedFiles()
+							.filter((i) => i.path.startsWith(templatesFolder));
+						const files: TFile[] = [];
+
+						templateFiles.forEach((file: TAbstractFile) => {
+							const initialValue =
+								this.plugin.settings.folderSpecificTemplates[
+									index
+								].templateName;
+							if (
+								file instanceof TFile &&
+								file.extension === "md"
+							) {
+								cb.addOption(
+									file.basename,
+									`Template: ${file.basename}`
+								);
+							}
+							cb.setValue(initialValue);
+						});
+
+						cb.onChange((value) => {
+							this.plugin.settings.folderSpecificTemplates[
+								index
+							].templateName = value;
+							this.plugin.saveSettings();
+						});
+					})
+					.addExtraButton((cb) => {
+						cb.setIcon("trash").onClick(() => {
+							this.plugin.settings.folderSpecificTemplates.splice(
+								index,
+								1
+							);
+							this.plugin.saveSettings();
+							// Force refresh
+							this.display();
+						});
+					});
+			}
+		);
+		new Setting(containerEl).addButton((cb) => {
+			cb.setButtonText("Add").onClick(() => {
+				this.plugin.settings.folderSpecificTemplates.push({
+					folderPath: "",
+					templateName: "",
+				});
+				this.plugin.saveSettings();
+				// Force refresh
+				this.display();
+			});
+		});
+	}
+}
