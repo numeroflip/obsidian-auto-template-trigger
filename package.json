@@ -1,6 +1,6 @@
 {
 	"name": "auto-template-trigger",
-	"version": "1.2.0",
+	"version": "1.2.1",
 	"description": "Automatically apply or prompt for a template when creating a note. Supports assigning templates to folders.",
 	"main": "main.js",
 	"scripts": {
