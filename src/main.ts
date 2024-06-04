@@ -74,7 +74,7 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		const templatesFolder = await getTemplatesFolder(app);
 		const isFileInTemplatesFolder = file.path.startsWith(templatesFolder);
 
-		if (!templatesFolder || !isFileInTemplatesFolder) {
+		if (!templatesFolder || isFileInTemplatesFolder) {
 			return false;
 		}
 
@@ -87,7 +87,6 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 
 	async handleTemplateTrigger() {
 		const templateFiles = await getTemplateFiles(app);
-
 		if (templateFiles.length === 0) {
 			console.error("No template files found");
 		}
