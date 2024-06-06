@@ -131,7 +131,8 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 				if (!prevPaths.length) {
 					return [pathFragment];
 				} else {
-					const newPath = [prevPaths, pathFragment].join("/");
+					const prevPath = prevPaths[prevPaths.length - 1];
+					const newPath = [prevPath, pathFragment].join("/");
 					return [...prevPaths, newPath];
 				}
 			},
@@ -148,13 +149,11 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 			if (assignedTemplateSetting) {
 				return;
 			}
-
-			assignedTemplateSetting =
-				this.settings.folderSpecificTemplates.find(
-					({ folderPath }) => folderPath === path
-				);
+			const foundSetting = this.settings.folderSpecificTemplates.find(
+				({ folderPath }) => folderPath === path
+			);
+			assignedTemplateSetting = foundSetting;
 		});
-
 		return assignedTemplateSetting?.templateName;
 	}
 
