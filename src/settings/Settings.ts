@@ -5,10 +5,12 @@ import { getTemplatesFolder } from "utils/utils";
 
 export interface PluginSettings {
 	folderSpecificTemplates: { folderPath: string; templateName: string }[];
+	disablePrompt: boolean;
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	folderSpecificTemplates: [],
+	disablePrompt: false,
 };
 
 export class Settings extends PluginSettingTab {
@@ -106,5 +108,19 @@ export class Settings extends PluginSettingTab {
 				this.display();
 			});
 		});
+
+		new Setting(containerEl)
+			.setName("Disable prompt")
+			.setDesc(
+				"Do not prompt for a template when there is no folder-specific template match."
+			)
+			.addToggle((cb) => {
+				cb.setValue(this.plugin.settings.disablePrompt).onChange(
+					async (value) => {
+						this.plugin.settings.disablePrompt = value;
+						await this.plugin.saveSettings();
+					}
+				);
+			});
 	}
 }
