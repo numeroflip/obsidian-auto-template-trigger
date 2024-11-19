@@ -107,7 +107,7 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 				this.applySpecificTemplate(assignedTemplate);
 			}
 
-			if (!assignedTemplate) {
+			if (!assignedTemplate && !this.settings.disablePrompt) {
 				this.triggerTemplateSelectorPrompt();
 			}
 		}

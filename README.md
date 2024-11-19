@@ -21,6 +21,8 @@ The most specific folder path will take precedence.
 This means, if you assign a template for the root folder ("/"), all the new files will automatically apply that template.
 Still, you can assign other templates for folders to overwrite that behavior.
 
+If you _only_ want to use folder-specific templates and do not want to be prompted to pick a template, use the `Disable prompt` option.
+
 ## Prerequisites
 
 It depends on the core `Templates` plugin to be enabled, and that a a templates folder is assigned.
