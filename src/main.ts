@@ -1,4 +1,4 @@
-import { Plugin, TAbstractFile, TFile } from "obsidian";
+import { Plugin, TFile } from "obsidian";
 import { shouldPreventTriggerIfTemplaterPluginUsed } from "./utils/templaterPluginUtils";
 import {
 	DEFAULT_SETTINGS,
@@ -34,12 +34,18 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 					return;
 				}
 
+				this.logGroup("[Auto Template Prompt] 📙 " + file.name);
 				const shouldTriggerPrompt =
 					await this.shouldTriggerTemplatePrompt(file);
 
 				if (shouldTriggerPrompt) {
-					this.handleTemplateTrigger();
+					await this.handleTemplateTrigger();
 				}
+				else {
+					this.log('❌ No action')
+				}
+
+				this.logGroupEnd()
 			})
 		);
 	}
@@ -56,18 +62,34 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	async shouldTriggerTemplatePrompt(file: TFile): Promise<Boolean> {
-		let isFileNew: boolean, isFileEmpty: boolean, isFileFocused: boolean;
-
-		if (!this.isReady || !isMarkdown(file)) {
+	async shouldTriggerTemplatePrompt(file: TFile): Promise<boolean> {
+		if (!this.isReady) {
+			this.log('ℹ️ Plugin is not yet ready');
 			return false;
 		}
 
-		isFileNew = file.stat.ctime === file.stat.mtime;
-		isFileEmpty = file.stat.size === 0;
-		isFileFocused = this.app.workspace.getActiveFile()?.path === file.path;
 
-		if (!isFileNew || !isFileEmpty || !isFileFocused) {
+		if (!isMarkdown(file)) {
+			this.log('ℹ️ File is not markdown');
+			return false;
+		}
+
+		const isFileNew = file.stat.ctime === file.stat.mtime;
+		const isFileEmpty = file.stat.size === 0;
+		const isFileFocused = this.app.workspace.getActiveFile()?.path === file.path;
+
+		if (!isFileFocused) {
+			this.log('ℹ️ File is not focused');
+			return false
+		}
+
+		if (!isFileNew) {
+			this.log('ℹ️ File is not new');
+			return false;
+		}
+
+		if (!isFileEmpty) {
+			this.log('ℹ️ File is not empty');
 			return false;
 		}
 
@@ -75,10 +97,12 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 		const isFileInTemplatesFolder = file.path.startsWith(templatesFolder);
 
 		if (!templatesFolder || isFileInTemplatesFolder) {
+			this.log('ℹ️ File is in templates folder');
 			return false;
 		}
 
 		if (shouldPreventTriggerIfTemplaterPluginUsed(this, file)) {
+			this.log('ℹ️ Templater plugin is used');
 			return false;
 		}
 
@@ -88,11 +112,14 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 	async handleTemplateTrigger() {
 		const templateFiles = await getTemplateFiles(app);
 		if (templateFiles.length === 0) {
-			console.error("No template files found");
+			console.error("⚠️ No templates found");
+			return;
 		}
 
 		if (templateFiles.length === 1) {
+			this.log('✔️ Apply the only template: ', templateFiles[0].basename);
 			this.applySpecificTemplate(templateFiles[0].basename);
+			return;
 		}
 
 		if (templateFiles.length > 1) {
@@ -104,12 +131,37 @@ export default class AutoTemplatePromptPlugin extends Plugin {
 				: null;
 
 			if (assignedTemplate) {
+				this.log('✔️ Apply folder specific template: ', assignedTemplate);
 				this.applySpecificTemplate(assignedTemplate);
+				return;
 			}
 
-			if (!assignedTemplate && !this.settings.disablePrompt) {
+			if (!this.settings.disablePrompt) {
+				this.log("✔️ Prompting for a template");
 				this.triggerTemplateSelectorPrompt();
+				return;
 			}
+
+			this.log("ℹ️ Promtpting is disabled, and no folder specific template found")
+			this.log('❌ No action')
+		}
+
+	}
+
+	log(...args: Parameters<Console["debug"]>) {
+		if (this.settings.debug) {
+			console.log(...args);
+		}
+	}
+
+	logGroup(...args: Parameters<Console["group"]>) {
+		if (this.settings.debug) {
+			console.group(...args);
+		}
+	}
+	logGroupEnd() {
+		if (this.settings.debug) {
+			console.groupEnd();
 		}
 	}
 

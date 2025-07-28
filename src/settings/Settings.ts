@@ -1,4 +1,4 @@
-import { TemplateSuggest, FolderSuggest } from "./fileSuggest";
+import { FolderSuggest } from "./fileSuggest";
 import AutoTemplatePromptPlugin from "../main";
 import { App, PluginSettingTab, Setting, TAbstractFile, TFile } from "obsidian";
 import { getTemplatesFolder } from "utils/utils";
@@ -6,11 +6,13 @@ import { getTemplatesFolder } from "utils/utils";
 export interface PluginSettings {
 	folderSpecificTemplates: { folderPath: string; templateName: string }[];
 	disablePrompt: boolean;
+	debug: boolean
 }
 
 export const DEFAULT_SETTINGS: PluginSettings = {
 	folderSpecificTemplates: [],
 	disablePrompt: false,
+	debug: false
 };
 
 export class Settings extends PluginSettingTab {
@@ -22,7 +24,7 @@ export class Settings extends PluginSettingTab {
 	}
 
 	display(): void {
-		let { containerEl } = this;
+		const { containerEl } = this;
 
 		containerEl.empty();
 
@@ -34,7 +36,7 @@ export class Settings extends PluginSettingTab {
 			);
 
 		this.plugin.settings.folderSpecificTemplates.map(
-			({ folderPath, templateName }, index) => {
+			({ folderPath }, index) => {
 				new Setting(this.containerEl)
 					.addSearch((cb) => {
 						new FolderSuggest(this.app, cb.inputEl);
@@ -58,7 +60,6 @@ export class Settings extends PluginSettingTab {
 						const templateFiles = this.app.vault
 							.getAllLoadedFiles()
 							.filter((i) => i.path.startsWith(templatesFolder));
-						const files: TFile[] = [];
 
 						templateFiles.forEach((file: TAbstractFile) => {
 							const initialValue =
@@ -122,5 +123,19 @@ export class Settings extends PluginSettingTab {
 					}
 				);
 			});
+
+		new Setting(containerEl)
+			.setName("Debug logging")
+			.setDesc(
+				"Enable debug logging to the console. Should be disabled, unless you're actively debugging an problem."
+			)
+			.addToggle((cb) => {
+				cb.setValue(this.plugin.settings.debug).onChange(
+					async (value) => {
+						this.plugin.settings.debug = value;
+						await this.plugin.saveSettings();
+					}
+				);
+			})
 	}
 }
